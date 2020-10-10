@@ -17,7 +17,7 @@ import cz.kyngs.easymysql.utils.ThrowableConsumer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AsyncConnection extends AbstractConnection {
 
@@ -26,7 +26,7 @@ public class AsyncConnection extends AbstractConnection {
 
     public AsyncConnection(Connection connection, int threadCount) {
         super(connection);
-        connectionQueue = new LinkedBlockingDeque<>();
+        connectionQueue = new LinkedBlockingQueue<>();
         workers = new AsyncThreadWorker[threadCount];
         for (int i = 0; i < workers.length; i++) {
             workers[i] = new AsyncThreadWorker(this, i);

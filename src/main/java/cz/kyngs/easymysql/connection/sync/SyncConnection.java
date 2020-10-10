@@ -12,16 +12,27 @@
 package cz.kyngs.easymysql.connection.sync;
 
 import cz.kyngs.easymysql.connection.AbstractConnection;
+import cz.kyngs.easymysql.utils.ThrowableConsumer;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class SyncConnection extends AbstractConnection {
     public SyncConnection(Connection connection) {
         super(connection);
     }
 
-    public Connection run(){
+    public Connection get(){
         return connection;
+    }
+
+    public void schedule(ThrowableConsumer<Connection, SQLException> consumer){
+        try {
+            consumer.accept(connection);
+        }catch (Exception e){
+            LoggerFactory.getLogger(getClass()).warn("An error occurred while performing sync job.", e);
+        }
     }
 
 }

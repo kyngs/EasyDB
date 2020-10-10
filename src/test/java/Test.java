@@ -21,8 +21,7 @@ public class Test {
         builder.setUsername("server");
         builder.setPassword("server");
         MySQL mySQL = builder.build();
-
-        mySQL.async().schedule(connection -> connection.prepareStatement("CREATE SCHEMA test").execute());
+        mySQL.sync().schedule(connection -> connection.prepareStatement("CREATE SCHEMA test").execute());
 
     }
 

@@ -14,19 +14,22 @@ package cz.kyngs.easymysql;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import cz.kyngs.easymysql.connection.async.AsyncConnection;
+import cz.kyngs.easymysql.connection.sync.SyncConnection;
 
 import java.sql.SQLException;
 
 public class MySQL {
 
     private final AsyncConnection async;
+    private final SyncConnection sync;
+    private final HikariDataSource hikariDataSource;
 
     protected MySQL(HikariConfig hikariConfig, int threadCount) throws SQLException {
 
-        HikariDataSource hikariDataSource = new HikariDataSource(hikariConfig);
+        hikariDataSource = new HikariDataSource(hikariConfig);
 
         async = new AsyncConnection(hikariDataSource.getConnection(), threadCount);
-
+        sync = new SyncConnection(hikariDataSource.getConnection());
 
     }
 
@@ -34,8 +37,13 @@ public class MySQL {
         return async;
     }
 
+    public SyncConnection sync(){
+        return sync;
+    }
+
     public void close(){
         async.close();
+        hikariDataSource.close();
     }
 
 }
