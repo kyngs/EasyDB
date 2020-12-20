@@ -18,6 +18,9 @@ import java.sql.SQLException;
 public class MySQLBuilder extends HikariConfig {
 
     private int threadCount;
+    private String host;
+    private int port;
+    private String database;
 
     public MySQLBuilder(){
 
@@ -25,7 +28,22 @@ public class MySQLBuilder extends HikariConfig {
         setJdbcUrl("jdbc:mysql://localhost:3306/");
         setUsername("root");
         addDataSourceProperty( "cachePrepStmts" , "true" );
+        host = "localhost";
+        port = 3306;
+        database = "";
 
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void setDatabase(String database) {
+        this.database = database;
     }
 
     public void setThreadCount(int threadCount) {
@@ -33,6 +51,7 @@ public class MySQLBuilder extends HikariConfig {
     }
 
     public MySQL build() throws SQLException {
+        setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s", host, port, database));
         return new MySQL(this, threadCount);
     }
 
