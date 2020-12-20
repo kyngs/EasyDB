@@ -18,11 +18,9 @@ public class Test {
 
     public static void main(String[] args) throws SQLException {
         MySQLBuilder builder = new MySQLBuilder();
-        builder.setUsername("server");
-        builder.setPassword("server");
         MySQL mySQL = builder.build();
-        mySQL.sync().schedule(connection -> connection.prepareStatement("CREATE SCHEMA test").execute());
-
+        mySQL.async().schedule(connection -> connection.prepareStatement("CREATE SCHEMA async").execute());
+        mySQL.sync().schedule(connection -> connection.prepareStatement("CREATE SCHEMA sync").execute());
     }
 
 }

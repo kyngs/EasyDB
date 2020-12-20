@@ -21,18 +21,20 @@ public class AsyncThreadWorker {
 
     private final AsyncConnection connection;
     private final Thread thread;
+    private final Connection dataConnection;
 
-    public AsyncThreadWorker(AsyncConnection connection, int id){
+    public AsyncThreadWorker(AsyncConnection connection, int id) throws SQLException {
         this.connection = connection;
         thread = new Thread(this::run, String.format("EasyMySQL Worker #%d", id));
         thread.start();
+        dataConnection = connection.getConnection();
     }
 
     public void run(){
         while (true){
             try {
                 ThrowableConsumer<Connection, SQLException> consumer = connection.getWork();
-                consumer.accept(connection.getConnection());
+                consumer.accept(dataConnection);
             }catch (InterruptedException e){
                 return;
             } catch (Exception e){

@@ -11,7 +11,10 @@
 
 package cz.kyngs.easymysql.connection;
 
+import com.zaxxer.hikari.HikariDataSource;
+
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class AbstractConnection {
 
@@ -21,7 +24,11 @@ public class AbstractConnection {
         this.connection = connection;
     }
 
-    public Connection getConnection() {
+    public AbstractConnection(HikariDataSource dataSource) throws SQLException {
+        connection = dataSource.getConnection();
+    }
+
+    public Connection getConnection() throws SQLException {
         return connection;
     }
 

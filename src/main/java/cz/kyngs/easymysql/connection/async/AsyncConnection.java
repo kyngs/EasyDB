@@ -11,6 +11,7 @@
 
 package cz.kyngs.easymysql.connection.async;
 
+import com.zaxxer.hikari.HikariDataSource;
 import cz.kyngs.easymysql.connection.AbstractConnection;
 import cz.kyngs.easymysql.utils.ThrowableConsumer;
 
@@ -23,9 +24,11 @@ public class AsyncConnection extends AbstractConnection {
 
     private final BlockingQueue<ThrowableConsumer<Connection, SQLException>> connectionQueue;
     private final AsyncThreadWorker[] workers;
+    private final HikariDataSource dataSource;
 
-    public AsyncConnection(Connection connection, int threadCount) {
-        super(connection);
+    public AsyncConnection(HikariDataSource dataSource , int threadCount) throws SQLException {
+        super((Connection) null);
+        this.dataSource = dataSource;
         connectionQueue = new LinkedBlockingQueue<>();
         workers = new AsyncThreadWorker[threadCount];
         for (int i = 0; i < workers.length; i++) {
@@ -47,4 +50,8 @@ public class AsyncConnection extends AbstractConnection {
         }
     }
 
+    @Override
+    public Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
 }
