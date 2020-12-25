@@ -15,14 +15,13 @@ import cz.kyngs.easymysql.utils.ThrowableConsumer;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
 public class AsyncThreadWorker {
 
     private final AsyncConnection master;
     private final Thread thread;
 
-    public AsyncThreadWorker(AsyncConnection master, int id) throws SQLException {
+    public AsyncThreadWorker(AsyncConnection master, int id) {
         this.master = master;
         thread = new Thread(this::run, String.format("EasyMySQL Worker #%d", id));
         thread.start();
