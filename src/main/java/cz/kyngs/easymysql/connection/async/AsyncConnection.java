@@ -22,13 +22,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class AsyncConnection extends AbstractConnection {
 
-    private final BlockingQueue<ThrowableConsumer<Connection, SQLException>> connectionQueue;
+    private final BlockingQueue<ThrowableConsumer<Connection, Exception>> connectionQueue;
     private final AsyncThreadWorker[] workers;
-    private final HikariDataSource dataSource;
 
-    public AsyncConnection(HikariDataSource dataSource , int threadCount) throws SQLException {
-        super((Connection) null);
-        this.dataSource = dataSource;
+    public AsyncConnection(HikariDataSource dataSource, int threadCount) throws SQLException {
+        super(dataSource);
         connectionQueue = new LinkedBlockingQueue<>();
         workers = new AsyncThreadWorker[threadCount];
         for (int i = 0; i < workers.length; i++) {
@@ -36,22 +34,19 @@ public class AsyncConnection extends AbstractConnection {
         }
     }
 
-    public void schedule(ThrowableConsumer<Connection, SQLException> connectionConsumer){
-        connectionQueue.add(connectionConsumer);
+    @Override
+    public void schedule(ThrowableConsumer<Connection, Exception> task) {
+        connectionQueue.add(task);
     }
 
-    protected ThrowableConsumer<Connection, SQLException> getWork() throws InterruptedException {
+    protected ThrowableConsumer<Connection, Exception> getWork() throws InterruptedException {
         return connectionQueue.take();
     }
 
-    public void close(){
+    public void close() {
         for (AsyncThreadWorker worker : workers) {
             worker.stop();
         }
     }
 
-    @Override
-    public Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
-    }
 }

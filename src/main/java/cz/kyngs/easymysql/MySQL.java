@@ -29,7 +29,7 @@ public class MySQL {
         hikariDataSource = new HikariDataSource(hikariConfig);
 
         async = new AsyncConnection(hikariDataSource, threadCount);
-        sync = new SyncConnection(hikariDataSource.getConnection());
+        sync = new SyncConnection(hikariDataSource);
 
     }
 

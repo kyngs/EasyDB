@@ -12,24 +12,22 @@
 package cz.kyngs.easymysql.connection;
 
 import com.zaxxer.hikari.HikariDataSource;
+import cz.kyngs.easymysql.utils.ThrowableConsumer;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 
-public class AbstractConnection {
+public abstract class AbstractConnection {
 
-    protected final Connection connection;
+    protected final HikariDataSource hikariDataSource;
 
-    public AbstractConnection(Connection connection) {
-        this.connection = connection;
+    public AbstractConnection(HikariDataSource hikariDataSource) {
+        this.hikariDataSource = hikariDataSource;
     }
 
-    public AbstractConnection(HikariDataSource dataSource) throws SQLException {
-        connection = dataSource.getConnection();
+    public HikariDataSource getDataSource() {
+        return hikariDataSource;
     }
 
-    public Connection getConnection() throws SQLException {
-        return connection;
-    }
+    public abstract void schedule(ThrowableConsumer<Connection, Exception> task);
 
 }

@@ -19,31 +19,29 @@ import java.sql.SQLException;
 
 public class AsyncThreadWorker {
 
-    private final AsyncConnection connection;
+    private final AsyncConnection master;
     private final Thread thread;
-    private final Connection dataConnection;
 
-    public AsyncThreadWorker(AsyncConnection connection, int id) throws SQLException {
-        this.connection = connection;
+    public AsyncThreadWorker(AsyncConnection master, int id) throws SQLException {
+        this.master = master;
         thread = new Thread(this::run, String.format("EasyMySQL Worker #%d", id));
         thread.start();
-        dataConnection = connection.getConnection();
     }
 
-    public void run(){
-        while (true){
-            try {
-                ThrowableConsumer<Connection, SQLException> consumer = connection.getWork();
-                consumer.accept(dataConnection);
-            }catch (InterruptedException e){
+    public void run() {
+        while (true) {
+            try (Connection connection = this.master.getDataSource().getConnection()) {
+                ThrowableConsumer<Connection, Exception> consumer = this.master.getWork();
+                consumer.accept(connection);
+            } catch (InterruptedException e) {
                 return;
-            } catch (Exception e){
+            } catch (Exception e) {
                 LoggerFactory.getLogger(AsyncThreadWorker.class).warn("An error occurred while performing async job.", e);
             }
         }
     }
 
-    public void stop(){
+    public void stop() {
         thread.interrupt();
     }
 
