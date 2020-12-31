@@ -33,7 +33,7 @@ Easy to use MySQL lib using HikariCP as backend
 
 **Using**
 ```java
-        mySQL.async().schedule(connection -> connection.prepareStatement("CREATE SCHEMA async").execute()); //Creating new schema async, the job gets put into queue waiting for worker to process it. (Async). See MySQLBuilder#setThreadCount
-        mySQL.sync().schedule(connection -> connection.prepareStatement("CREATE SCHEMA sync").execute()); //Creating new schema sync, job gets executed immediately. 
+        mySQL.async().schedule(connection -> connection.prepareStatement("CREATE SCHEMA `async`").execute()); //Creating new schema async, the job gets put into queue waiting for worker to process it. (Async). See MySQLBuilder#setThreadCount
+        mySQL.sync().schedule(connection -> connection.prepareStatement("CREATE SCHEMA `sync`").execute()); //Creating new schema sync, job gets executed immediately. 
 ```
 Closing ResultSets and PreparedStatements is handled automatically, so you only need to do the important things.
