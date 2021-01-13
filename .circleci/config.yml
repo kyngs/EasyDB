@@ -5,13 +5,13 @@ orbs:
 jobs:
   build:
     docker:
-      - image: "cimg/openjdk:15.0.0"
+#      - image: "cimg/openjdk:15.0.0"
       - image: "maven:3.3-jdk-8"
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
     steps:
-      - run: java --version
+      - run: mvn package
 workflows:
   build:
     jobs:
