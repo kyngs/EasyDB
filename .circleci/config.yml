@@ -11,6 +11,7 @@ jobs:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
     steps:
+      - checkout
       - run: mvn package
 workflows:
   build:
