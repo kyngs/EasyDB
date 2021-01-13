@@ -4,6 +4,9 @@ jobs:
   maven-build:
     docker:
       - image: circleci/maven:0.0.12
+        auth:
+          username: mydockerhub-user
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
 workflows:
