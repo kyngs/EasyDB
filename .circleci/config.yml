@@ -1,9 +1,22 @@
-version: 2.1
+#version: 2.1
 
+#orbs:
+#  maven: circleci/maven@0.0.12
+#workflows:
+#  maven_test:
+#    jobs:
+#      - maven/test # checkout, build, test, and upload test results
+version: 2.1
 orbs:
-  #maven: circleci/maven@0.0.12
   node: circleci/node@1.1
-workflows:
-  maven_test:
-    jobs:
-      - maven/test # checkout, build, test, and upload test results
+jobs:
+  build:
+    executor:
+      name: node/default
+      tag: '10.4'
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run: npm install
+      - run: npm run test
