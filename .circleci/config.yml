@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   maven-build:
     docker:
-      - image: circleci/maven:0.0.12
+      - image: circleci/openjdk:8-jdk-node
         auth:
           username: mydockerhub-user
           password: $DOCKERHUB_PASSWORD
