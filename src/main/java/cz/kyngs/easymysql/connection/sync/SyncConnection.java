@@ -28,7 +28,6 @@ public class SyncConnection extends AbstractConnection {
     public void schedule(ThrowableConsumer<Connection, Exception> task) {
         try (Connection connection = getDataSource().getConnection()) {
             task.accept(connection);
-            connection.close();
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass()).warn("An error occurred while performing sync job.", e);
         }

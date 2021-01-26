@@ -37,7 +37,6 @@ public class AsyncThreadWorker {
             }
             try (Connection connection = this.master.getDataSource().getConnection()) {
                 consumer.accept(connection);
-                connection.close();
             } catch (Exception e) {
                 LoggerFactory.getLogger(AsyncThreadWorker.class).warn("An error occurred while performing async job.", e);
             }
