@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 kyngs
+ * Copyright (c) 2021 kyngs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,15 @@ public class AsyncThreadWorker {
 
     public void run() {
         while (true) {
-            try (Connection connection = this.master.getDataSource().getConnection()) {
-                ThrowableConsumer<Connection, Exception> consumer = this.master.getWork();
-                consumer.accept(connection);
+            ThrowableConsumer<Connection, Exception> consumer;
+            try {
+                consumer = this.master.getWork();
             } catch (InterruptedException e) {
                 return;
+            }
+            try (Connection connection = this.master.getDataSource().getConnection()) {
+                consumer.accept(connection);
+                connection.close();
             } catch (Exception e) {
                 LoggerFactory.getLogger(AsyncThreadWorker.class).warn("An error occurred while performing async job.", e);
             }
