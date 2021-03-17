@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 kyngs
+ * Copyright (c) 2021 kyngs
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,23 @@ public class MySQLBuilder extends HikariConfig {
     private String host;
     private int port;
     private String database;
+    private boolean autoReconnect;
 
     public MySQLBuilder(){
 
         threadCount = 4;
         setJdbcUrl("jdbc:mysql://localhost:3306/");
         setUsername("root");
-        addDataSourceProperty( "cachePrepStmts" , "true" );
+        addDataSourceProperty("cachePrepStmts", "true");
         host = "localhost";
         port = 3306;
         database = "";
+        autoReconnect = true;
 
+    }
+
+    public void setAutoReconnect(boolean autoReconnect) {
+        this.autoReconnect = autoReconnect;
     }
 
     public void setHost(String host) {
@@ -51,7 +57,7 @@ public class MySQLBuilder extends HikariConfig {
     }
 
     public MySQL build() throws SQLException {
-        setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s", host, port, database));
+        setJdbcUrl(String.format("jdbc:mysql://%s:%s/%s%s", host, port, database, autoReconnect ? "?autoReconnect=true" : ""));
         return new MySQL(this, threadCount);
     }
 
