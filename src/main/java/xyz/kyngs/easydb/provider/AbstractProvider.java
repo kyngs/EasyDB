@@ -8,7 +8,7 @@
 
 package xyz.kyngs.easydb.provider;
 
-import xyz.kyngs.easydb.scheduler.ThrowableConsumer;
+import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
 public abstract class AbstractProvider<T, E extends Throwable> implements Provider<T, E> {
 
@@ -25,8 +25,9 @@ public abstract class AbstractProvider<T, E extends Throwable> implements Provid
     }
 
     @Override
-    public void runTask(ThrowableConsumer<T, E> task) {
+    public <V> V runTask(ThrowableFunction<T, E> task) {
         if (!open) throw new IllegalStateException("Provider closed");
+        return null;
     }
 
     @Override

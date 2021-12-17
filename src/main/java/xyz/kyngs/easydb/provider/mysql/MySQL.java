@@ -11,7 +11,7 @@ package xyz.kyngs.easydb.provider.mysql;
 import com.zaxxer.hikari.HikariDataSource;
 import xyz.kyngs.easydb.EasyDB;
 import xyz.kyngs.easydb.provider.AbstractProvider;
-import xyz.kyngs.easydb.scheduler.ThrowableConsumer;
+import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -46,15 +46,17 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     }
 
     @Override
-    public void runTask(ThrowableConsumer<Connection, SQLException> task) {
+    public <V> V runTask(ThrowableFunction<Connection, SQLException> task) {
         super.runTask(task);
+        V v;
         try {
             var connection = dataSource.getConnection();
-            task.accept(connection);
+            v = task.run(connection);
             connection.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return v;
     }
 
 }

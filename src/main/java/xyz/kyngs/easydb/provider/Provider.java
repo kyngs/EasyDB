@@ -9,7 +9,7 @@
 package xyz.kyngs.easydb.provider;
 
 import xyz.kyngs.easydb.EasyDB;
-import xyz.kyngs.easydb.scheduler.ThrowableConsumer;
+import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
 public interface Provider<T, E extends Throwable> {
 
@@ -38,6 +38,6 @@ public interface Provider<T, E extends Throwable> {
 
     boolean isOpen();
 
-    void runTask(ThrowableConsumer<T, E> task) throws E;
+    <V> V runTask(ThrowableFunction<T, E> task) throws E;
 
 }
