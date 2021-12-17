@@ -51,7 +51,7 @@ public class EasyDB {
         return (T) providers.get(clazz);
     }
 
-    private <X extends Throwable, E, T extends Provider<E, X>, V> V runTask(Class<T> clazz, ThrowableFunction<E, X> task) {
+    private <X extends Throwable, E, T extends Provider<E, X>, V> V runTask(Class<T> clazz, ThrowableFunction<E, V, X> task) {
         try {
             return getProvider(clazz).runTask(task);
         } catch (Throwable e) {
@@ -65,12 +65,9 @@ public class EasyDB {
     }
 
     private <X extends Throwable, E, T extends Provider<E, X>> void runTask(Class<T> clazz, ThrowableConsumer<E, X> task) {
-        runTask(clazz, new ThrowableFunction<>() {
-            @Override
-            public <V> V run(E e) throws X {
-                task.run(e);
-                return null;
-            }
+        runTask(clazz, e -> {
+            task.run(e);
+            return null;
         });
     }
 
@@ -78,7 +75,7 @@ public class EasyDB {
         scheduler.schedule(() -> runTask(clazz, task));
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>, V> V runFunctionSync(Class<T> clazz, ThrowableFunction<E, X> task) {
+    public <X extends Throwable, E, T extends Provider<E, X>, V> V runFunctionSync(Class<T> clazz, ThrowableFunction<E, V, X> task) {
         return runTask(clazz, task);
     }
 

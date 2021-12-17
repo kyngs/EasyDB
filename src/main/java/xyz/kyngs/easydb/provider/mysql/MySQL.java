@@ -46,7 +46,7 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     }
 
     @Override
-    public <V> V runTask(ThrowableFunction<Connection, SQLException> task) {
+    public <V> V runTask(ThrowableFunction<Connection, V, SQLException> task) {
         super.runTask(task);
         V v;
         try {

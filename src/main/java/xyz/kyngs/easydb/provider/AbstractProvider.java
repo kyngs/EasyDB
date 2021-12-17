@@ -25,7 +25,7 @@ public abstract class AbstractProvider<T, E extends Throwable> implements Provid
     }
 
     @Override
-    public <V> V runTask(ThrowableFunction<T, E> task) {
+    public <V> V runTask(ThrowableFunction<T, V, E> task) {
         if (!open) throw new IllegalStateException("Provider closed");
         return null;
     }

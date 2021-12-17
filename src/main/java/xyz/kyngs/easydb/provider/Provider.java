@@ -38,6 +38,6 @@ public interface Provider<T, E extends Throwable> {
 
     boolean isOpen();
 
-    <V> V runTask(ThrowableFunction<T, E> task) throws E;
+    <V> V runTask(ThrowableFunction<T, V, E> task) throws E;
 
 }

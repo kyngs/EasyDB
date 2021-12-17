@@ -8,8 +8,8 @@
 
 package xyz.kyngs.easydb.scheduler;
 
-public interface ThrowableFunction<T, E extends Throwable> {
+public interface ThrowableFunction<T, V, E extends Throwable> {
 
-    <V> V run(T t) throws E;
+    V run(T t) throws E;
 
 }
