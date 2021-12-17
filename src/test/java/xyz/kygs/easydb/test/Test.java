@@ -28,15 +28,15 @@ public class Test {
                                 )
                         )
         );
-        db.runTaskSync(connection -> {
+        db.runTaskSync(MySQL.class, connection -> {
             var ps = connection.prepareStatement("CREATE SCHEMA `TEST`");
             ps.execute();
-        }, MySQL.class);
+        });
 
-        db.runTaskSync(connection -> {
+        db.runTaskSync(MySQL.class, connection -> {
             var ps = connection.prepareStatement("CREATE TABLE `TEST`.`table` (id INT NOT NULL)");
             ps.execute();
-        }, MySQL.class);
+        });
     }
 
 }

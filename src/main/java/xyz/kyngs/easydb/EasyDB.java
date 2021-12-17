@@ -51,7 +51,7 @@ public class EasyDB {
         return (T) providers.get(clazz);
     }
 
-    private <X extends Throwable, E, T extends Provider<E, X>, V> V runTask(ThrowableFunction<E, X> task, Class<T> clazz) {
+    private <X extends Throwable, E, T extends Provider<E, X>, V> V runTask(Class<T> clazz, ThrowableFunction<E, X> task) {
         try {
             return getProvider(clazz).runTask(task);
         } catch (Throwable e) {
@@ -60,26 +60,26 @@ public class EasyDB {
         }
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskSync(ThrowableConsumer<E, X> task, Class<T> clazz) {
-        runTask(task, clazz);
+    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskSync(Class<T> clazz, ThrowableConsumer<E, X> task) {
+        runTask(clazz, task);
     }
 
-    private <X extends Throwable, E, T extends Provider<E, X>> void runTask(ThrowableConsumer<E, X> task, Class<T> clazz) {
-        runTask(new ThrowableFunction<>() {
+    private <X extends Throwable, E, T extends Provider<E, X>> void runTask(Class<T> clazz, ThrowableConsumer<E, X> task) {
+        runTask(clazz, new ThrowableFunction<>() {
             @Override
             public <V> V run(E e) throws X {
                 task.run(e);
                 return null;
             }
-        }, clazz);
+        });
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskAsync(ThrowableConsumer<E, X> task, Class<T> clazz) {
-        scheduler.schedule(() -> runTask(task, clazz));
+    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskAsync(Class<T> clazz, ThrowableConsumer<E, X> task) {
+        scheduler.schedule(() -> runTask(clazz, task));
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>, V> V runFunctionSync(ThrowableFunction<E, X> task, Class<T> clazz) {
-        return runTask(task, clazz);
+    public <X extends Throwable, E, T extends Provider<E, X>, V> V runFunctionSync(Class<T> clazz, ThrowableFunction<E, X> task) {
+        return runTask(clazz, task);
     }
 
     private void dispatchTask(Consumer<Provider> task) {
