@@ -56,6 +56,7 @@ public class EasyDB {
             return getProvider(clazz).runTask(task);
         } catch (Throwable e) {
             System.err.println("[EasyDB] An error occurred while performing EasyDB job.");
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
