@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -11,14 +11,14 @@ package xyz.kyngs.easydb.provider;
 import xyz.kyngs.easydb.EasyDB;
 import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
-public interface Provider<T, E extends Throwable> {
+public interface Provider<T, E extends Exception> {
 
     /**
      * Starts the provider and its dependencies
      *
      * @param easyDB API main
      */
-    void start(EasyDB easyDB);
+    void start(EasyDB<?, ?, ?> easyDB);
 
     /**
      * Tells the provider to start accepting requests
@@ -39,5 +39,13 @@ public interface Provider<T, E extends Throwable> {
     boolean isOpen();
 
     <V> V runTask(ThrowableFunction<T, V, E> task) throws E;
+
+    /**
+     * Identifies whether the thrown exception is caused by connection issues
+     *
+     * @param e the thrown exception
+     * @return true if the exception was caused by a connection issue
+     */
+    boolean identify(Exception e);
 
 }

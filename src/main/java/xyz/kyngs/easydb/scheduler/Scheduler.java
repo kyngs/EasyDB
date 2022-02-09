@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -11,13 +11,7 @@ package xyz.kyngs.easydb.scheduler;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class Scheduler {
-
-    private final ExecutorService executor;
-
-    public Scheduler(ExecutorService executor) {
-        this.executor = executor;
-    }
+public record Scheduler(ExecutorService executor) {
 
     public void schedule(Runnable run) {
         executor.submit(run);

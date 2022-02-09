@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -15,6 +15,7 @@ import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLTransientConnectionException;
 
 public class MySQL extends AbstractProvider<Connection, SQLException> {
 
@@ -26,7 +27,7 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     }
 
     @Override
-    public void start(EasyDB easyDB) {
+    public void start(EasyDB<?, ?, ?> easyDB) {
         dataSource = new HikariDataSource(config.hikariConfig);
     }
 
@@ -46,17 +47,19 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     }
 
     @Override
-    public <V> V runTask(ThrowableFunction<Connection, V, SQLException> task) {
+    public <V> V runTask(ThrowableFunction<Connection, V, SQLException> task) throws SQLException {
         super.runTask(task);
-        V v;
-        try {
-            var connection = dataSource.getConnection();
-            v = task.run(connection);
-            connection.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+
+        var connection = dataSource.getConnection();
+        var v = task.run(connection);
+        connection.close();
+
         return v;
+    }
+
+    @Override
+    public boolean identify(Exception e) {
+        return e instanceof SQLTransientConnectionException;
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -10,7 +10,7 @@ package xyz.kyngs.easydb.provider;
 
 import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
-public abstract class AbstractProvider<T, E extends Throwable> implements Provider<T, E> {
+public abstract class AbstractProvider<T, E extends Exception> implements Provider<T, E> {
 
     private boolean open;
 
@@ -25,7 +25,7 @@ public abstract class AbstractProvider<T, E extends Throwable> implements Provid
     }
 
     @Override
-    public <V> V runTask(ThrowableFunction<T, V, E> task) {
+    public <V> V runTask(ThrowableFunction<T, V, E> task) throws E {
         if (!open) throw new IllegalStateException("Provider closed");
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -13,20 +13,22 @@ import xyz.kyngs.easydb.scheduler.Scheduler;
 import xyz.kyngs.easydb.scheduler.ThrowableConsumer;
 import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
-@SuppressWarnings("rawtypes")
-public class EasyDB {
+public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
 
     private static Scheduler globalScheduler;
 
     private final Scheduler scheduler;
-    private final Map<Class<? extends Provider>, Provider> providers;
+    private final P provider;
+    private final Function<Exception, Boolean> exceptionHandler, connectionExceptionHandler;
 
-    public EasyDB(EasyDBConfig config) {
+    public EasyDB(EasyDBConfig<P, T, E> config) {
         config.build();
+
+        this.exceptionHandler = config.exceptionHandler;
+        this.connectionExceptionHandler = config.connectionExceptionHandler;
+
         if (config.useGlobalScheduler) {
             if (globalScheduler == null) globalScheduler = new Scheduler(config.executor);
             scheduler = globalScheduler;
@@ -34,64 +36,83 @@ public class EasyDB {
             scheduler = new Scheduler(config.executor);
         }
 
-        providers = new HashMap<>();
+        this.provider = config.provider;
 
-        for (Provider provider : config.providers) {
-            providers.put(provider.getClass(), provider);
-        }
+        provider.start(this);
 
-        dispatchTask(provider -> provider.start(this));
-
-        dispatchTask(Provider::open);
+        provider.open();
 
     }
 
-    public <T extends Provider> T getProvider(Class<T> clazz) throws ClassCastException {
-        //noinspection unchecked
-        return (T) providers.get(clazz);
-    }
-
-    private <X extends Throwable, E, T extends Provider<E, X>, V> V runTask(Class<T> clazz, ThrowableFunction<E, V, X> task) {
+    private <V> V runTask(ThrowableFunction<T, V, E> task) {
         try {
-            return getProvider(clazz).runTask(task);
-        } catch (Throwable e) {
-            System.err.println("[EasyDB] An error occurred while performing EasyDB job.");
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            return provider.runTask(task);
+        } catch (ConnectionException e) {
+            var cause = e.getCause();
+            if (connectionExceptionHandler.apply(cause)) throwExceptionAsRuntime(cause);
+        } catch (RuntimeException e) {
+            if (e.getCause() != null) {
+                if (e.getCause() instanceof Exception cause) {
+                    handleException(cause);
+                    return null;
+                } else {
+                    throw e;
+                }
+            }
+
+            handleException(e);
+        } catch (Exception e) {
+            handleException(e);
         }
+        return null;
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskSync(Class<T> clazz, ThrowableConsumer<E, X> task) {
-        runTask(clazz, task);
+    private void handleException(Exception e) {
+        var bool = provider.identify(e);
+
+        if (bool ? connectionExceptionHandler.apply(e) : exceptionHandler.apply(e)) throwExceptionAsRuntime(e);
     }
 
-    private <X extends Throwable, E, T extends Provider<E, X>> void runTask(Class<T> clazz, ThrowableConsumer<E, X> task) {
-        runTask(clazz, e -> {
+    private void throwExceptionAsRuntime(Exception e) {
+        if (e.getCause() instanceof RuntimeException ex) throw ex;
+
+        if (e instanceof RuntimeException ex) throw ex;
+        else throw new RuntimeException(e);
+
+    }
+
+    public void runTaskSync(ThrowableConsumer<T, E> task) {
+        runTask(task);
+    }
+
+    private void runTask(ThrowableConsumer<T, E> task) {
+        runTask(e -> {
             task.run(e);
             return null;
         });
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>> void runTaskAsync(Class<T> clazz, ThrowableConsumer<E, X> task) {
-        scheduler.schedule(() -> runTask(clazz, task));
+    public void runTaskAsync(ThrowableConsumer<T, E> task) {
+        scheduler.schedule(() -> {
+            try {
+                runTask(task);
+            } catch (Exception e) {
+                System.err.println("[EasyDB] Exception on async task");
+                e.printStackTrace();
+            }
+        });
     }
 
-    public <X extends Throwable, E, T extends Provider<E, X>, V> V runFunctionSync(Class<T> clazz, ThrowableFunction<E, V, X> task) {
-        return runTask(clazz, task);
-    }
-
-    private void dispatchTask(Consumer<Provider> task) {
-        for (Provider provider : providers.values()) {
-            task.accept(provider);
-        }
+    public <V> V runFunctionSync(ThrowableFunction<T, V, E> task) {
+        return runTask(task);
     }
 
     public void stop() {
-        dispatchTask(Provider::close);
+        provider.close();
 
         scheduler.stop();
 
-        dispatchTask(Provider::stop);
+        provider.start(this);
     }
 
 }

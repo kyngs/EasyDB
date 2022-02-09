@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 kyngs
+ * Copyright (c) 2022 kyngs
  *
  * Please see the included "LICENSE" file for further information about licensing of this code.
  *
@@ -10,48 +10,54 @@ package xyz.kyngs.easydb;
 
 import xyz.kyngs.easydb.provider.Provider;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Function;
 
-public class EasyDBConfig {
+public class EasyDBConfig<P extends Provider<T, E>, T, E extends Exception> {
+
+    protected final P provider;
 
     /**
-     * Set of all providers.
-     */
-    protected final Set<Provider> providers;
-    /**
-     * Makes EasyDB use one shared Scheduler workers per VM, instead of creating a new one with each instance, useful in plugin systems.
+     * Makes EasyDB use one shared Scheduler  per VM, instead of creating a new one with each instance, useful in plugin systems.
      * Enabled by default.
      */
     protected boolean useGlobalScheduler;
     protected ExecutorService executor;
 
-    public EasyDBConfig() {
-        providers = new HashSet<>();
-        useGlobalScheduler = true;
+    /**
+     * If function returns true, the exception will be thrown, logged if async.
+     * Connection exceptions won't be handled by exceptionHandler (if identified correctly)
+     * All throwables that do not extend {@link Exception} will not be caught.
+     */
+    protected Function<Exception, Boolean> exceptionHandler, connectionExceptionHandler;
 
+    public EasyDBConfig(P provider) {
+        this.provider = provider;
+        useGlobalScheduler = true;
+    }
+
+    public EasyDBConfig<P, T, E> setExceptionHandler(Function<Exception, Boolean> exceptionHandler) {
+        this.exceptionHandler = exceptionHandler;
+        return this;
+    }
+
+    public EasyDBConfig<P, T, E> setConnectionExceptionHandler(Function<Exception, Boolean> connectionExceptionHandler) {
+        this.connectionExceptionHandler = connectionExceptionHandler;
+        return this;
     }
 
     protected void build() {
         if (executor == null) executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
     }
 
-    public EasyDBConfig addProvider(Provider... providers) {
-        Collections.addAll(this.providers, providers);
-        return this;
-    }
-
-    public EasyDBConfig useGlobalWorkers(boolean use) {
+    public EasyDBConfig<P, T, E> useGlobalExecutor(boolean use) {
         this.useGlobalScheduler = use;
         return this;
     }
 
-    public EasyDBConfig setExecutor(ExecutorService executor) {
+    public EasyDBConfig<P, T, E> setExecutor(ExecutorService executor) {
         this.executor = executor;
         return this;
     }
-
 }
