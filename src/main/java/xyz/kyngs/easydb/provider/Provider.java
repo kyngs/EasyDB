@@ -8,6 +8,7 @@
 
 package xyz.kyngs.easydb.provider;
 
+import xyz.kyngs.easydb.ConnectionException;
 import xyz.kyngs.easydb.EasyDB;
 import xyz.kyngs.easydb.scheduler.ThrowableFunction;
 
@@ -18,7 +19,7 @@ public interface Provider<T, E extends Exception> {
      *
      * @param easyDB API main
      */
-    void start(EasyDB<?, ?, ?> easyDB);
+    void start(EasyDB<?, ?, ?> easyDB) throws ConnectionException;
 
     /**
      * Tells the provider to start accepting requests
@@ -46,6 +47,6 @@ public interface Provider<T, E extends Exception> {
      * @param e the thrown exception
      * @return true if the exception was caused by a connection issue
      */
-    boolean identify(Exception e);
+    boolean identifyConnectionException(Exception e);
 
 }

@@ -38,7 +38,12 @@ public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
 
         this.provider = config.provider;
 
-        provider.start(this);
+        try {
+            provider.start(this);
+        } catch (ConnectionException e) {
+            var cause = e.getCause();
+            if (connectionExceptionHandler.apply(cause)) throwExceptionAsRuntime(cause);
+        }
 
         provider.open();
 
@@ -68,7 +73,7 @@ public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
     }
 
     private void handleException(Exception e) {
-        var bool = provider.identify(e);
+        var bool = provider.identifyConnectionException(e);
 
         if (bool ? connectionExceptionHandler.apply(e) : exceptionHandler.apply(e)) throwExceptionAsRuntime(e);
     }
@@ -112,7 +117,7 @@ public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
 
         scheduler.stop();
 
-        provider.start(this);
+        provider.stop();
     }
 
 }

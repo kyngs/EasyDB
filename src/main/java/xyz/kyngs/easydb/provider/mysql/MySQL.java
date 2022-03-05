@@ -32,16 +32,6 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     }
 
     @Override
-    public void open() {
-        super.open();
-    }
-
-    @Override
-    public void close() {
-        super.close();
-    }
-
-    @Override
     public void stop() {
         dataSource.close();
     }
@@ -50,15 +40,13 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
     public <V> V runTask(ThrowableFunction<Connection, V, SQLException> task) throws SQLException {
         super.runTask(task);
 
-        var connection = dataSource.getConnection();
-        var v = task.run(connection);
-        connection.close();
-
-        return v;
+        try (var connection = dataSource.getConnection()) {
+            return task.run(connection);
+        }
     }
 
     @Override
-    public boolean identify(Exception e) {
+    public boolean identifyConnectionException(Exception e) {
         return e instanceof SQLTransientConnectionException;
     }
 
