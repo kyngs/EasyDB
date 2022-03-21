@@ -49,6 +49,8 @@ public class EasyDBConfig<P extends Provider<T, E>, T, E extends Exception> {
 
     protected void build() {
         if (executor == null) executor = Executors.newWorkStealingPool(Runtime.getRuntime().availableProcessors());
+        if (exceptionHandler == null) exceptionHandler = e -> true;
+        if (connectionExceptionHandler == null) connectionExceptionHandler = e -> true;
     }
 
     public EasyDBConfig<P, T, E> useGlobalExecutor(boolean use) {

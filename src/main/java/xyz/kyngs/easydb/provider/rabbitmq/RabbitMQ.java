@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class RabbitMQ extends AbstractProvider<Channel, IOException> {
 
     private final RabbitMQConfig config;
-    private final AtomicReference<StandardPool<Channel>> channelPool;
+    private final AtomicReference<StandardPool<Channel>> outgoingPool;
     private final AtomicReference<Connection> connection;
 
     public RabbitMQ(RabbitMQConfig config) {
@@ -31,7 +31,7 @@ public class RabbitMQ extends AbstractProvider<Channel, IOException> {
         this.config = config;
 
         connection = new AtomicReference<>();
-        channelPool = new AtomicReference<>();
+        outgoingPool = new AtomicReference<>();
     }
 
     public void addSubscriber(String queue) {
@@ -62,11 +62,11 @@ public class RabbitMQ extends AbstractProvider<Channel, IOException> {
     private Connection connectionCheck() {
         return connection.updateAndGet(connection1 -> {
             if (!connection1.isOpen()) {
-                var oldPool = channelPool.get();
+                var oldPool = outgoingPool.get();
 
                 var connection = openConnection();
 
-                channelPool.set(new StandardPool<>(
+                outgoingPool.set(new StandardPool<>(
                         config.dryBehavior,
                         config.limitReachBehavior,
                         this::openChannel,
@@ -119,7 +119,7 @@ public class RabbitMQ extends AbstractProvider<Channel, IOException> {
     public <V> V runTask(ThrowableFunction<Channel, V, IOException> task) throws IOException {
         super.runTask(task);
 
-        var pool = channelPool.get();
+        var pool = outgoingPool.get();
 
         try {
             var channel = pool.obtain();
