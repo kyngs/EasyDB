@@ -51,7 +51,7 @@ public class StandardPool<T> implements Pool<T> {
                 }
             }
 
-            free.forEach(destroyer);
+            free.forEach(this::destroy);
         }, "Pool Finalizer");
 
         for (int i = 0; i < initialSize; i++) {
@@ -111,7 +111,7 @@ public class StandardPool<T> implements Pool<T> {
         }
 
         if (t != null && !healthCheck.apply(t)) {
-            destroyer.accept(t);
+            destroy(t);
 
             return obtain();
         }
@@ -126,12 +126,18 @@ public class StandardPool<T> implements Pool<T> {
         return free.take();
     }
 
+    private void destroy(T t) {
+        size.decrementAndGet();
+
+        destroyer.accept(t);
+    }
+
     @Override
     public void cycle(T t) {
         if (!occupied.remove(t)) throw new IllegalStateException();
 
         if (!healthCheck.apply(t)) {
-            destroyer.accept(t);
+            destroy(t);
             return;
         }
 
@@ -146,5 +152,9 @@ public class StandardPool<T> implements Pool<T> {
 
     private void openCheck() {
         if (!open) throw new IllegalStateException("The pool has already been closed");
+    }
+
+    public int getSize() {
+        return size.get();
     }
 }
