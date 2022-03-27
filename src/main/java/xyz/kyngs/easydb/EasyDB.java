@@ -22,7 +22,6 @@ public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
     private final Scheduler scheduler;
     private final P provider;
     private final Function<Exception, Boolean> exceptionHandler, connectionExceptionHandler;
-
     public EasyDB(EasyDBConfig<P, T, E> config) {
         config.build();
 
@@ -42,6 +41,10 @@ public class EasyDB<P extends Provider<T, E>, T, E extends Exception> {
 
         provider.open();
 
+    }
+
+    public P getProvider() {
+        return provider;
     }
 
     private <V> V runTask(ThrowableFunction<T, V, E> task) {

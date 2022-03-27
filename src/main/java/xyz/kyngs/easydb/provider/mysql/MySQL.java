@@ -45,6 +45,10 @@ public class MySQL extends AbstractProvider<Connection, SQLException> {
         }
     }
 
+    public HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
     @Override
     public boolean identifyConnectionException(Exception e) {
         return e instanceof SQLTransientConnectionException;
